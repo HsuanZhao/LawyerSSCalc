@@ -150,12 +150,12 @@
     min-height:420px;
   }
   .mid-block{text-align:center;margin-bottom:0;}
-  .mid-item{margin-bottom:64px;}
+  .mid-item{margin-bottom:50px;text-align:center;}
   .mid-item .t{font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;}
   .mid-item .v{font-size:22px;font-weight:800;}
   .mid-item .v.up{color:var(--red);}
   .mid-item .v.down{color:var(--green-dark);}
-  .mid-item .d{font-size:11.5px;color:#9C9686;margin-top:3px;}
+  .mid-item .d{font-size:11.5px;color:#9C9686;margin-top:3px;line-height:1.6;}
 
   /* summary */
   .summary{
@@ -544,7 +544,7 @@ function compute(){
     <div class="mid-item">
       <div class="t">社保多缴</div>
       <div class="v up">${fmtWanSigned(ssDiff)}</div>
-      <div class="d">${fmtWan(before.ssTotal)} → ${fmtWan(after.ssTotal)}${before.ssTotal>0 ? '，涨 '+ssMultiple.toFixed(1)+' 倍' : ''}</div>
+      <div class="d">${fmtWan(before.ssTotal)} → ${fmtWan(after.ssTotal)}${before.ssTotal>0 ? '<br>涨 '+ssMultiple.toFixed(1)+' 倍' : ''}</div>
     </div>
     <div class="mid-item">
       <div class="t">到手${netDiff<0?'减少':'增加'}</div>
