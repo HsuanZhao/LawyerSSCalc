@@ -3,7 +3,8 @@
 > 一个为提成律师量身定制的交互式社保与到手收入测算工具，直观展示“按最低基数缴纳”与“按实际收入 100% 实缴”之间的巨大差异。
 
 <img width="913" height="731" alt="7b06def9-f838-4f0c-8068-06bd7ab5d245" src="https://github.com/user-attachments/assets/1a63760f-91b9-4de8-a741-c1e563bd3cea" />
-<img width="911" height="853" alt="c73e244d-d18d-4cb8-a1dd-2fdbacff7077" src="https://github.com/user-attachments/assets/dba66b04-d8d5-42a9-ab7e-5564453aef31" />
+<img width="909" height="899" alt="72f42bf9-2ee5-481e-bc63-a540a36bacc2" src="https://github.com/user-attachments/assets/453143ad-5666-43c5-976b-f2d765204c70" />
+
 
 ## ✨ 功能特点
 
