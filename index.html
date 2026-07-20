@@ -189,6 +189,21 @@
   .foot .handle{font-size:10.5px;color:#B7AF98;margin-top:4px;letter-spacing:.5px;}
 
   /* export bar */
+  .calc-bar{
+    display:flex;justify-content:center;margin:0 0 30px;
+  }
+  .calc-btn{
+    background:var(--red);color:#fff;border:none;
+    padding:13px 46px;border-radius:26px;
+    font-size:15.5px;font-weight:700;letter-spacing:2px;
+    cursor:pointer;font-family:inherit;
+    box-shadow:0 4px 14px rgba(190,75,60,0.28);
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .calc-btn:hover{background:#A83F32;transform:translateY(-1px);box-shadow:0 6px 18px rgba(190,75,60,0.35);}
+  .calc-btn:active{transform:translateY(0);}
+  .calc-btn.pulsed{transform:scale(0.97);}
+
   .export-bar{
     display:flex;gap:12px;justify-content:center;margin:26px 0 6px;flex-wrap:wrap;
   }
@@ -387,6 +402,10 @@
     </div>
   </div>
 
+  <div class="calc-bar">
+    <button class="calc-btn" id="calcBtn">计算</button>
+  </div>
+
   <div id="exportCard">
 
   <div class="card-title-block" id="cardTitleBlock" style="display:none;">
@@ -495,16 +514,16 @@ function calcTax(taxable){
   return 0;
 }
 
-function onCityChange(){
+function onCityChangeNoCompute(){
   const city = $('citySelect').value;
   if (city !== 'custom' && CITY_PRESETS[city]){
     const p = CITY_PRESETS[city];
     $('baseFloor').value = p.floor;
     $('baseCap').value = p.cap;
     $('baseBefore').value = p.floor;
+    userEditedAfter = false;
     autoSetAfterBase();
   }
-  compute();
 }
 
 function autoSetAfterBase(){
@@ -637,18 +656,26 @@ function compute(){
 }
 
 // wire up events
-['income','mgmtRate','baseBefore','baseAfter','baseFloor','baseCap','unitRate','personalRate','deduction','extraDeduction']
-  .forEach(id => $(id).addEventListener('input', compute));
-$('citySelect').addEventListener('change', onCityChange);
-
-// income/mgmtRate change should also refresh auto-suggested after-base if user hasn't manually diverged much
 let userEditedAfter = false;
 $('baseAfter').addEventListener('input', ()=>{ userEditedAfter = true; });
+
+// typing in any field just updates the suggested "after" base (if not manually
+// overridden) — it does NOT recompute the chart. Recompute only happens when
+// the user clicks the 计算 button, so results never show a half-typed number.
 ['income','mgmtRate','baseFloor','baseCap'].forEach(id=>{
   $(id).addEventListener('input', ()=>{
     if(!userEditedAfter){ autoSetAfterBase(); }
   });
 });
+
+$('citySelect').addEventListener('change', onCityChangeNoCompute);
+
+$('calcBtn').addEventListener('click', () => {
+  compute();
+  $('calcBtn').classList.add('pulsed');
+  setTimeout(()=> $('calcBtn').classList.remove('pulsed'), 300);
+});
+
 
 // ---- Card export ----
 function prepCardForExport(){
