@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提成律师社保实缴计算器</title>
+<style>
+  :root{
+    --bg:#F4F0E6;
+    --ink:#20201C;
+    --ink-soft:#5C5A50;
+    --tan:#C7AE86;
+    --tan-line:#B39A6E;
+    --red:#BE4B3C;
+    --red-soft:#D97C6E;
+    --gray:#8B8378;
+    --green:#2E6E5C;
+    --green-dark:#1F4F42;
+    --card:#EFE9DA;
+    --panel-dark:#231F1B;
+    --accent:#BE4B3C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Noto Serif SC",serif;
+    padding:28px 20px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  .eyebrow-row{
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1.5px solid var(--ink);
+    padding-bottom:10px;margin-bottom:26px;
+    font-size:13px;letter-spacing:2px;
+  }
+  .eyebrow-row .left{color:var(--red);font-weight:700;}
+  .eyebrow-row .right{color:var(--ink);font-weight:700;}
+
+  h1{
+    font-size:38px;line-height:1.28;margin:0 0 14px;
+    font-weight:800;letter-spacing:.5px;
+  }
+  .sub{
+    font-size:14.5px;color:var(--ink-soft);margin-bottom:30px;line-height:1.7;
+  }
+  .sub b{color:var(--ink);}
+
+  /* controls */
+  .controls{
+    background:var(--card);
+    border:1px solid #DDD3BC;
+    border-radius:10px;
+    padding:22px 24px;
+    margin-bottom:32px;
+  }
+  .controls h2{
+    font-size:15px;margin:0 0 16px;letter-spacing:1px;color:var(--ink);
+    display:flex;align-items:center;gap:8px;
+  }
+  .controls h2::before{
+    content:"";width:8px;height:8px;background:var(--red);border-radius:50%;display:inline-block;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+    gap:16px 20px;
+  }
+  .field label{
+    display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.5px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid #C9BE9F;
+    border-radius:6px;
+    background:#FBF9F2;
+    font-size:14.5px;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .field input:focus, .field select:focus{
+    outline:2px solid var(--red-soft);outline-offset:1px;
+  }
+  .field.wide{grid-column:span 2;}
+  .presetrow{margin-bottom:18px;}
+  .hint{font-size:11.5px;color:#9C9686;margin-top:5px;}
+
+  /* chart section */
+  .chart-area{
+    display:grid;
+    grid-template-columns:1fr 220px 1fr;
+    gap:10px;
+    align-items:start;
+    margin-bottom:10px;
+  }
+  .col-head{
+    text-align:center;margin-bottom:18px;
+  }
+  .badge{
+    display:inline-block;padding:7px 22px;border-radius:20px;
+    font-size:14px;font-weight:700;letter-spacing:1px;
+  }
+  .badge.before{background:#E4DAC2;color:#5C5232;}
+  .badge.after{background:var(--red);color:#fff;}
+  .basisline{font-size:12px;color:var(--ink-soft);margin-top:10px;}
+
+  .barcol{display:flex;flex-direction:column;align-items:center;}
+  .bar-outer{
+    width:150px;
+    border-radius:4px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    display:flex;flex-direction:column;
+  }
+  .seg{
+    width:100%;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:0;
+    position:relative;
+  }
+  .seg-mgmt{background:var(--tan);}
+  .seg-ss{background:var(--red);}
+  .seg-tax{background:var(--gray);}
+  .seg-net{background:var(--green);}
+
+  .labels-left, .labels-right{
+    display:flex;flex-direction:column;justify-content:space-between;
+    min-height:420px;
+    padding-top:0;
+  }
+  .labels-right{align-items:flex-start;}
+  .labels-left{align-items:flex-end;text-align:right;}
+  .lbl{padding:4px 0;}
+  .lbl .name{font-size:12.5px;color:var(--ink-soft);}
+  .lbl .name .pct{font-size:11px;color:#A69E8C;margin-left:4px;}
+  .lbl .val{font-size:19px;font-weight:800;margin-top:2px;}
+  .lbl.mgmt .val{color:#8A754A;}
+  .lbl.ss .val{color:var(--red);}
+  .lbl.tax .val{color:var(--gray);}
+  .lbl.net .val{color:var(--green-dark);}
+
+  .midcol{
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;
+    gap:0;
+    padding-top:60px;
+    min-height:420px;
+  }
+  .mid-block{text-align:center;margin-bottom:0;}
+  .mid-item{margin-bottom:64px;}
+  .mid-item .t{font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;}
+  .mid-item .v{font-size:22px;font-weight:800;}
+  .mid-item .v.up{color:var(--red);}
+  .mid-item .v.down{color:var(--green-dark);}
+  .mid-item .d{font-size:11.5px;color:#9C9686;margin-top:3px;}
+
+  /* summary */
+  .summary{
+    background:var(--panel-dark);
+    color:#F4F0E6;
+    border-radius:10px;
+    padding:26px 28px;
+    display:grid;
+    grid-template-columns:220px 1px 1fr;
+    gap:24px;
+    align-items:center;
+    margin-top:30px;
+  }
+  .summary .divider{background:rgba(255,255,255,0.15);height:100%;}
+  .summary .ratio{
+    font-size:34px;font-weight:800;
+  }
+  .summary .ratio .arrow{color:#8A8378;margin:0 8px;font-weight:400;}
+  .summary .ratio .after-num{color:var(--red-soft);}
+  .summary .ratio-label{font-size:12px;color:#B7B2A2;margin-top:6px;}
+  .summary .text{font-size:14.5px;line-height:1.85;color:#E7E2D3;}
+  .summary .text b{color:var(--red-soft);}
+  .summary .text .g{color:#8FD0B8;}
+
+  .foot{
+    margin-top:24px;font-size:11px;color:#A69E8C;line-height:1.8;
+    display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
+  }
+  .foot .signature{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;}
+  .foot .handle{font-size:10.5px;color:#B7AF98;margin-top:4px;letter-spacing:.5px;}
+
+  /* export bar */
+  .export-bar{
+    display:flex;gap:12px;justify-content:center;margin:26px 0 6px;flex-wrap:wrap;
+  }
+  .export-btn{
+    background:var(--panel-dark);color:#F4F0E6;border:none;
+    padding:11px 24px;border-radius:24px;font-size:13.5px;font-weight:700;
+    cursor:pointer;letter-spacing:1px;display:flex;align-items:center;gap:8px;
+    font-family:inherit;transition:transform .15s ease, background .15s ease;
+  }
+  .export-btn:hover{background:#332D26;transform:translateY(-1px);}
+  .export-btn.secondary{background:transparent;color:var(--ink);border:1.5px solid var(--ink);}
+  .export-btn.secondary:hover{background:var(--ink);color:#F4F0E6;}
+  .export-status{
+    text-align:center;font-size:12px;color:var(--ink-soft);margin-top:8px;min-height:16px;
+  }
+
+  /* card watermark shown only inside exported card */
+  .card-watermark{
+    text-align:center;font-size:11px;color:#B7AF98;letter-spacing:1.5px;
+    padding-top:18px;margin-top:6px;border-top:1px solid #DDD3BC;
+    display:none;
+  }
+  .card-title-block{
+    padding:6px 6px 22px;
+  }
+  .card-eyebrow{
+    font-size:12px;letter-spacing:2px;color:var(--red);font-weight:700;margin-bottom:10px;
+  }
+  .card-h1{
+    font-size:26px;font-weight:800;line-height:1.4;color:var(--ink);
+  }
+  #exportCard.exporting{
+    background:var(--bg);padding:24px;border-radius:12px;
+  }
+
+  @media (max-width:800px){
+    .chart-area{grid-template-columns:1fr;}
+    .midcol{flex-direction:row;flex-wrap:wrap;justify-content:space-around;padding-top:10px;min-height:auto;gap:16px;}
+    .mid-item{margin-bottom:10px;}
+    .labels-left, .labels-right{min-height:auto;flex-direction:row;flex-wrap:wrap;justify-content:space-around;text-align:center;align-items:center;gap:10px;}
+    .lbl{text-align:center;}
+    .barcol{order:-1;margin:10px 0;}
+    .summary{grid-template-columns:1fr;text-align:center;}
+    .summary .divider{display:none;}
+    .foot{flex-direction:column;align-items:flex-start;}
+    h1{font-size:28px;}
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow-row">
+    <span class="left">互动计算器</span>
+    <span class="right">社保实缴 · 律师行业 · 全国口径</span>
+  </div>
+
+  <h1>提成律师社保实缴计算器<br>钱到底去哪了？</h1>
+  <div class="sub">按最低基数缴纳 vs 按实际收入 100% 实缴 · 全国城市可选 · 提成律师需<b>独自承担单位 + 个人双边社保</b>，填入下方参数，柱状图与结果会实时变化。</div>
+
+  <div class="controls">
+    <h2>基础参数</h2>
+    <div class="grid presetrow">
+      <div class="field wide">
+        <label>年创收（元）</label>
+        <input type="number" id="income" value="300000" step="1000" min="0">
+      </div>
+      <div class="field">
+        <label>律所管理费率</label>
+        <input type="number" id="mgmtRate" value="25" step="0.5" min="0" max="90">
+        <div class="hint">单位：%</div>
+      </div>
+      <div class="field">
+        <label>城市 / 口径预设</label>
+        <select id="citySelect">
+          <option value="custom">自定义（手动填基数）</option>
+          <option value="shanghai" selected>上海</option>
+          <option value="beijing">北京</option>
+          <option value="guangzhou">广州</option>
+          <option value="shenzhen">深圳</option>
+          <option value="hangzhou">杭州</option>
+          <option value="chengdu">成都</option>
+        </select>
+      </div>
+    </div>
+
+    <h2 style="margin-top:22px;">社保缴费基数（月）</h2>
+    <div class="grid">
+      <div class="field">
+        <label>之前 · 最低基数（元/月）</label>
+        <input type="number" id="baseBefore" value="7460" step="10">
+      </div>
+      <div class="field">
+        <label>之后 · 实缴基数（元/月）</label>
+        <input type="number" id="baseAfter" value="18750" step="10">
+        <div class="hint" id="baseAfterHint">已按创收自动测算，可手动覆盖</div>
+      </div>
+      <div class="field">
+        <label>基数下限参考（元/月）</label>
+        <input type="number" id="baseFloor" value="7460" step="10">
+      </div>
+      <div class="field">
+        <label>基数上限参考（元/月）</label>
+        <input type="number" id="baseCap" value="36921" step="10">
+      </div>
+    </div>
+
+    <h2 style="margin-top:22px;">社保费率（提成律师双边合计承担）</h2>
+    <div class="grid">
+      <div class="field">
+        <label>单位部分费率</label>
+        <input type="number" id="unitRate" value="24.5" step="0.1" min="0" max="60">
+        <div class="hint">单位：%（本应由雇主承担）</div>
+      </div>
+      <div class="field">
+        <label>个人部分费率</label>
+        <input type="number" id="personalRate" value="10.5" step="0.1" min="0" max="30">
+        <div class="hint">单位：%（可税前扣除）</div>
+      </div>
+      <div class="field">
+        <label>个税基本减除费用（年）</label>
+        <input type="number" id="deduction" value="60000" step="1000">
+      </div>
+      <div class="field">
+        <label>其他专项附加扣除（年，选填）</label>
+        <input type="number" id="extraDeduction" value="0" step="1000">
+      </div>
+    </div>
+  </div>
+
+  <div id="exportCard">
+
+  <div class="card-title-block" id="cardTitleBlock" style="display:none;">
+    <div class="card-eyebrow">数据拆解 · 社保实缴 · 律师行业</div>
+    <div class="card-h1" id="cardH1">一个年创收 <span id="cardIncome">30</span> 万的提成律师，钱都去哪了？</div>
+  </div>
+
+  <div class="chart-area">
+    <!-- BEFORE -->
+    <div>
+      <div class="col-head">
+        <span class="badge before">之前 · 按最低基数</span>
+        <div class="basisline" id="beforeBasisLine"></div>
+      </div>
+      <div style="display:flex;gap:14px;justify-content:center;align-items:flex-start;">
+        <div class="labels-left" id="labelsBefore"></div>
+        <div class="barcol"><div class="bar-outer" id="barBefore" style="height:420px;"></div></div>
+      </div>
+    </div>
+
+    <!-- MID -->
+    <div class="midcol" id="midcol"></div>
+
+    <!-- AFTER -->
+    <div>
+      <div class="col-head">
+        <span class="badge after">之后 · 100% 实缴</span>
+        <div class="basisline" id="afterBasisLine"></div>
+      </div>
+      <div style="display:flex;gap:14px;justify-content:center;align-items:flex-start;">
+        <div class="barcol"><div class="bar-outer" id="barAfter" style="height:420px;"></div></div>
+        <div class="labels-right" id="labelsAfter"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div>
+      <div class="ratio"><span id="ratioBefore">60%</span><span class="arrow">→</span><span class="after-num" id="ratioAfter">45%</span></div>
+      <div class="ratio-label">创收到手率</div>
+    </div>
+    <div class="divider"></div>
+    <div class="text" id="summaryText"></div>
+  </div>
+
+  <div class="card-watermark" id="cardWatermark">数据拆解 · 提成律师社保实缴计算器　·　@硅律SiliconLawyer</div>
+
+  </div>
+
+  <div class="export-bar">
+    <button class="export-btn" id="downloadBtn">⬇ 生成卡片并下载</button>
+    <button class="export-btn secondary" id="shareBtn">↗ 分享卡片</button>
+  </div>
+  <div class="export-status" id="exportStatus"></div>
+
+  <div class="foot">
+    <div>
+      测算口径：律所管理费率、社保费率、基数、专项扣除均可自定义；个税按 2019 年后综合所得七级累进税率年度预扣预缴口径估算，仅计入基本减除与个人部分社保扣除，未计公积金、专项附加扣除、办案差旅等费用。计算结果仅供参考，具体以当地社保、税务政策为准。
+    </div>
+    <div style="text-align:right;">
+      <div class="signature">互动测算 · 提成律师社保工具</div>
+      <div class="handle">@硅律SiliconLawyer</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CITY_PRESETS = {
+  shanghai:  { floor: 7460,  cap: 36921 },
+  beijing:   { floor: 6821,  cap: 34188 },
+  guangzhou: { floor: 4546,  cap: 27234 },
+  shenzhen:  { floor: 2520,  cap: 33891 },
+  hangzhou:  { floor: 4812,  cap: 24030 },
+  chengdu:   { floor: 4200,  cap: 21227 },
+};
+
+const $ = id => document.getElementById(id);
+
+function fmtWan(n){
+  return (n/10000).toFixed(1) + ' 万';
+}
+function fmtWanSigned(n){
+  const s = n>=0 ? '+' : '−';
+  return s + Math.abs(n/10000).toFixed(1) + ' 万';
+}
+function fmtPct(n){ return n.toFixed(1) + '%'; }
+
+// progressive annual tax brackets (China IIT comprehensive income, cumulative withholding table)
+const BRACKETS = [
+  { upTo: 36000,     rate: 0.03, deduct: 0 },
+  { upTo: 144000,    rate: 0.10, deduct: 2520 },
+  { upTo: 300000,    rate: 0.20, deduct: 16920 },
+  { upTo: 420000,    rate: 0.25, deduct: 31920 },
+  { upTo: 660000,    rate: 0.30, deduct: 52920 },
+  { upTo: 960000,    rate: 0.35, deduct: 85920 },
+  { upTo: Infinity,  rate: 0.45, deduct: 181920 },
+];
+function calcTax(taxable){
+  if (taxable <= 0) return 0;
+  for (const b of BRACKETS){
+    if (taxable <= b.upTo){
+      return Math.max(0, taxable * b.rate - b.deduct);
+    }
+  }
+  return 0;
+}
+
+function onCityChange(){
+  const city = $('citySelect').value;
+  if (city !== 'custom' && CITY_PRESETS[city]){
+    const p = CITY_PRESETS[city];
+    $('baseFloor').value = p.floor;
+    $('baseCap').value = p.cap;
+    $('baseBefore').value = p.floor;
+    autoSetAfterBase();
+  }
+  compute();
+}
+
+function autoSetAfterBase(){
+  const income = parseFloat($('income').value) || 0;
+  const mgmtRate = (parseFloat($('mgmtRate').value)||0)/100;
+  const floor = parseFloat($('baseFloor').value) || 0;
+  const cap = parseFloat($('baseCap').value) || Infinity;
+  let monthly = (income * (1-mgmtRate)) / 12;
+  monthly = Math.max(floor, Math.min(cap, monthly));
+  $('baseAfter').value = Math.round(monthly);
+}
+
+function buildBar(containerId, segments, totalRef){
+  const el = $(containerId);
+  el.innerHTML = '';
+  const totalHeight = 420;
+  segments.forEach(seg => {
+    const h = Math.max(2, (seg.value/totalRef) * totalHeight);
+    const div = document.createElement('div');
+    div.className = 'seg ' + seg.cls;
+    div.style.height = h + 'px';
+    el.appendChild(div);
+  });
+}
+
+function buildLabels(containerId, items, reverse){
+  const el = $(containerId);
+  el.innerHTML = '';
+  const list = reverse ? items : items;
+  list.forEach(it => {
+    const d = document.createElement('div');
+    d.className = 'lbl ' + it.cls;
+    d.innerHTML = `<div class="name">${it.name} <span class="pct">${it.pct}</span></div><div class="val">${it.valTxt}</div>`;
+    el.appendChild(d);
+  });
+}
+
+function compute(){
+  const income = parseFloat($('income').value) || 0;
+  const mgmtRate = (parseFloat($('mgmtRate').value)||0)/100;
+  const unitRate = (parseFloat($('unitRate').value)||0)/100;
+  const personalRate = (parseFloat($('personalRate').value)||0)/100;
+  const totalSSRate = unitRate + personalRate;
+  const deduction = parseFloat($('deduction').value) || 0;
+  const extraDeduction = parseFloat($('extraDeduction').value) || 0;
+  const baseBefore = parseFloat($('baseBefore').value) || 0;
+  const baseAfter = parseFloat($('baseAfter').value) || 0;
+
+  const mgmtFee = income * mgmtRate;
+
+  function calcSide(monthlyBase){
+    const annualBase = monthlyBase * 12;
+    const ssTotal = annualBase * totalSSRate;
+    const ssPersonal = annualBase * personalRate;
+    const taxable = Math.max(0, income - mgmtFee - ssPersonal - deduction - extraDeduction);
+    const tax = calcTax(taxable);
+    const net = income - mgmtFee - ssTotal - tax;
+    return { ssTotal, ssPersonal, tax, net, annualBase };
+  }
+
+  const before = calcSide(baseBefore);
+  const after = calcSide(baseAfter);
+
+  const totalRef = income; // same total for both since mgmt fee fixed
+
+  // ---- BEFORE bar & labels ----
+  buildBar('barBefore', [
+    { cls:'seg-mgmt', value: mgmtFee },
+    { cls:'seg-ss', value: before.ssTotal },
+    { cls:'seg-tax', value: before.tax },
+    { cls:'seg-net', value: before.net },
+  ], totalRef);
+
+  buildLabels('labelsBefore', [
+    { cls:'mgmt', name:'律所管理费', pct: fmtPct(mgmtFee/income*100||0), valTxt: fmtWan(mgmtFee) },
+    { cls:'ss', name:'双边社保', pct: fmtPct(before.ssTotal/income*100||0), valTxt: fmtWan(before.ssTotal) },
+    { cls:'tax', name:'个人所得税', pct: fmtPct(before.tax/income*100||0), valTxt: fmtWan(before.tax) },
+    { cls:'net', name:'到手收入', pct: fmtPct(before.net/income*100||0), valTxt: fmtWan(before.net) },
+  ]);
+
+  // ---- AFTER bar & labels ----
+  buildBar('barAfter', [
+    { cls:'seg-mgmt', value: mgmtFee },
+    { cls:'seg-ss', value: after.ssTotal },
+    { cls:'seg-tax', value: after.tax },
+    { cls:'seg-net', value: after.net },
+  ], totalRef);
+
+  buildLabels('labelsAfter', [
+    { cls:'mgmt', name:'律所管理费', pct: fmtPct(mgmtFee/income*100||0), valTxt: fmtWan(mgmtFee) },
+    { cls:'ss', name:'双边社保', pct: fmtPct(after.ssTotal/income*100||0), valTxt: fmtWan(after.ssTotal) },
+    { cls:'tax', name:'个人所得税', pct: fmtPct(after.tax/income*100||0), valTxt: fmtWan(after.tax) },
+    { cls:'net', name:'到手收入', pct: fmtPct(after.net/income*100||0), valTxt: fmtWan(after.net) },
+  ]);
+
+  // mid column
+  const ssDiff = after.ssTotal - before.ssTotal;
+  const netDiff = after.net - before.net;
+  const ssMultiple = before.ssTotal > 0 ? (after.ssTotal/before.ssTotal) : 0;
+  $('midcol').innerHTML = `
+    <div class="mid-item">
+      <div class="t">管理费不变</div>
+      <div class="v">${fmtWan(mgmtFee)}</div>
+    </div>
+    <div class="mid-item">
+      <div class="t">社保多缴</div>
+      <div class="v up">${fmtWanSigned(ssDiff)}</div>
+      <div class="d">${fmtWan(before.ssTotal)} → ${fmtWan(after.ssTotal)}${before.ssTotal>0 ? '，涨 '+ssMultiple.toFixed(1)+' 倍' : ''}</div>
+    </div>
+    <div class="mid-item">
+      <div class="t">到手${netDiff<0?'减少':'增加'}</div>
+      <div class="v ${netDiff<0?'down':'up'}">${fmtWanSigned(netDiff)}</div>
+      <div class="d">${fmtWan(before.net)} → ${fmtWan(after.net)}</div>
+    </div>
+  `;
+
+  // basis lines
+  $('beforeBasisLine').innerText = `缴费基数 ${baseBefore.toLocaleString()} 元/月 · 创收 ${fmtWan(income)}`;
+  $('afterBasisLine').innerText = `缴费基数 ${baseAfter.toLocaleString()} 元/月 · 创收 ${fmtWan(income)}`;
+
+  // ratio summary
+  const ratioBefore = income>0 ? (before.net/income*100) : 0;
+  const ratioAfter = income>0 ? (after.net/income*100) : 0;
+  $('ratioBefore').innerText = ratioBefore.toFixed(0)+'%';
+  $('ratioAfter').innerText = ratioAfter.toFixed(0)+'%';
+
+  const unitBorne = (baseAfter*12*unitRate);
+  const isSecond = after.ssTotal > mgmtFee;
+  $('summaryText').innerHTML = `实缴之后，社保基金分走 <b>${fmtWan(after.ssTotal)}</b>${isSecond ? '，超过律所管理费，成为律师创收的<b>第二大分钱方</b>' : ''}——其中约 <b>${fmtWan(unitBorne)}</b>「单位部分」，本应由雇主承担，却由提成律师<span class="g">自己承担</span>。到手收入从 ${fmtWan(before.net)} 降至 <b>${fmtWan(after.net)}</b>，到手率 ${ratioBefore.toFixed(0)}% → ${ratioAfter.toFixed(0)}%。`;
+}
+
+// wire up events
+['income','mgmtRate','baseBefore','baseAfter','baseFloor','baseCap','unitRate','personalRate','deduction','extraDeduction']
+  .forEach(id => $(id).addEventListener('input', compute));
+$('citySelect').addEventListener('change', onCityChange);
+
+// income/mgmtRate change should also refresh auto-suggested after-base if user hasn't manually diverged much
+let userEditedAfter = false;
+$('baseAfter').addEventListener('input', ()=>{ userEditedAfter = true; });
+['income','mgmtRate','baseFloor','baseCap'].forEach(id=>{
+  $(id).addEventListener('input', ()=>{
+    if(!userEditedAfter){ autoSetAfterBase(); }
+  });
+});
+
+// ---- Card export ----
+function prepCardForExport(){
+  const income = parseFloat($('income').value) || 0;
+  $('cardIncome').innerText = (income/10000).toFixed(0);
+  $('cardTitleBlock').style.display = 'block';
+  $('cardWatermark').style.display = 'block';
+  $('exportCard').classList.add('exporting');
+}
+function unprepCardAfterExport(){
+  $('cardTitleBlock').style.display = 'none';
+  $('cardWatermark').style.display = 'none';
+  $('exportCard').classList.remove('exporting');
+}
+
+async function generateCardCanvas(){
+  prepCardForExport();
+  await new Promise(r => setTimeout(r, 60)); // let layout settle
+  const node = $('exportCard');
+  const canvas = await html2canvas(node, {
+    backgroundColor: '#F4F0E6',
+    scale: 2,
+    useCORS: true,
+  });
+  unprepCardAfterExport();
+  return canvas;
+}
+
+$('downloadBtn').addEventListener('click', async () => {
+  const statusEl = $('exportStatus');
+  statusEl.innerText = '正在生成卡片…';
+  try{
+    const canvas = await generateCardCanvas();
+    const link = document.createElement('a');
+    link.download = '提成律师社保实缴测算卡片.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    statusEl.innerText = '卡片已下载 ✓';
+  }catch(err){
+    console.error(err);
+    statusEl.innerText = '生成失败，请重试';
+  }
+  setTimeout(()=>{ statusEl.innerText=''; }, 3000);
+});
+
+$('shareBtn').addEventListener('click', async () => {
+  const statusEl = $('exportStatus');
+  statusEl.innerText = '正在生成卡片…';
+  try{
+    const canvas = await generateCardCanvas();
+    canvas.toBlob(async (blob) => {
+      if (!blob){ statusEl.innerText = '生成失败，请重试'; return; }
+      const file = new File([blob], '提成律师社保实缴测算卡片.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        try{
+          await navigator.share({
+            files: [file],
+            title: '提成律师社保实缴测算',
+            text: '一个年创收律师，社保实缴前后到手差多少？',
+          });
+          statusEl.innerText = '已打开分享面板';
+        }catch(e){
+          statusEl.innerText = '';
+        }
+      } else {
+        const link = document.createElement('a');
+        link.download = '提成律师社保实缴测算卡片.png';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        statusEl.innerText = '当前设备不支持系统分享，已改为下载 ✓';
+      }
+      setTimeout(()=>{ statusEl.innerText=''; }, 3000);
+    }, 'image/png');
+  }catch(err){
+    console.error(err);
+    statusEl.innerText = '生成失败，请重试';
+    setTimeout(()=>{ statusEl.innerText=''; }, 3000);
+  }
+});
+
+// init
+autoSetAfterBase();
+userEditedAfter = false;
+compute();
+</script>
+</body>
+</html>
