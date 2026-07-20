@@ -187,6 +187,7 @@
   }
   .foot .signature{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;}
   .foot .handle{font-size:10.5px;color:#B7AF98;margin-top:4px;letter-spacing:.5px;}
+  .foot-sign{text-align:right;flex:0 0 auto;}
 
   /* export bar */
   .calc-bar{
@@ -299,8 +300,15 @@
     .summary .text{font-size:13px;}
 
     .export-btn{padding:10px 18px;font-size:12.5px;}
-    .foot{flex-direction:column;align-items:flex-start;gap:10px;}
-    .foot > div:last-child{text-align:left;}
+    .foot{
+      flex-direction:column;align-items:flex-start;gap:14px;
+      font-size:10.5px;line-height:1.7;
+    }
+    .foot > div:first-child{width:100%;}
+    .foot-sign{
+      text-align:left;width:100%;
+      padding-top:10px;border-top:1px solid #E2D9C2;
+    }
     .hero{margin-bottom:24px;}
     .logo-mark svg{width:40px;height:40px;}
   }
@@ -465,7 +473,7 @@
     <div>
       测算口径：律所管理费率、社保费率、基数、专项扣除均可自定义；个税按 2019 年后综合所得七级累进税率年度预扣预缴口径估算，仅计入基本减除与个人部分社保扣除，未计公积金、专项附加扣除、办案差旅等费用。计算结果仅供参考，具体以当地社保、税务政策为准。
     </div>
-    <div style="text-align:right;">
+    <div class="foot-sign">
       <div class="signature">互动测算 · 提成律师社保工具</div>
       <div class="handle">@硅律SiliconLawyer</div>
     </div>
@@ -652,7 +660,7 @@ function compute(){
 
   const unitBorne = (baseAfter*12*unitRate);
   const isSecond = after.ssTotal > mgmtFee;
-  $('summaryText').innerHTML = `实缴之后，社保基金分走 <b>${fmtWan(after.ssTotal)}</b>${isSecond ? '，超过律所管理费，成为律师创收的<b>第二大分钱方</b>' : ''}——其中约 <b>${fmtWan(unitBorne)}</b>「单位部分」，本应由雇主承担，却由提成律师<span class="g">自己承担</span>。到手收入从 ${fmtWan(before.net)} 降至 <b>${fmtWan(after.net)}</b>，到手率 ${ratioBefore.toFixed(0)}% → ${ratioAfter.toFixed(0)}%。`;
+  $('summaryText').innerHTML = `实缴之后，社保基金分走 <b>${fmtWan(after.ssTotal)}</b>${isSecond ? '，超过律所管理费，成为律师创收的<b>第二大分钱方</b>' : ''}——其中约 <b>${fmtWan(unitBorne)}</b>「单位部分」，本应由雇主承担，但按行业规矩，一般均由提成律师<span class="g">自己承担</span>。到手收入从 ${fmtWan(before.net)} 降至 <b>${fmtWan(after.net)}</b>，到手率 ${ratioBefore.toFixed(0)}% → ${ratioAfter.toFixed(0)}%。`;
 }
 
 // wire up events
